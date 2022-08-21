@@ -5,21 +5,43 @@
 #include <windows.h>
 #include <bcrypt.h>
 
-// FIXME: there a missing `wdm.h` header.
+// FIXME: there's a missing `wdm.h` header.
 
-double getSysOpType()
+// Not thread-safe.
+inline double getSysOpType()
 {
-    double ret = 0.0;
-    NTSTATUS(WINAPI * RtlGetVersion)(LPOSVERSIONINFOEXW);
-    OSVERSIONINFOEXW osInfo;
+    static bool cached = false;
+    static double ret = 0.0;
 
-    *(FARPROC*)&RtlGetVersion = GetProcAddress(GetModuleHandleA("ntdll"), "RtlGetVersion");
-
-    if (NULL != RtlGetVersion)
+    if (!cached)
     {
+        using RtlGetVersionFP = NTSTATUS(WINAPI*)(LPOSVERSIONINFOEXW);
+
+        RtlGetVersionFP RtlGetVersion = nullptr;
+        HMODULE ntdllHandle = GetModuleHandleA("ntdll");
+
+        if (ntdllHandle == NULL)
+        {
+            // TODO: Throw an error.
+            // https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlea#return-value
+        }
+
+        RtlGetVersion = reinterpret_cast<RtlGetVersionFP>(GetProcAddress(ntdllHandle, "RtlGetVersion"));
+
+        if (RtlGetVersion == NULL)
+        {
+            // TODO: Throw an error.
+            // https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress#return-value
+        }
+
+        OSVERSIONINFOEXW osInfo = {};
         osInfo.dwOSVersionInfoSize = sizeof(osInfo);
+        
         RtlGetVersion(&osInfo);
-        ret = (double)osInfo.dwMajorVersion;
+
+        ret = static_cast<double>(osInfo.dwMajorVersion);
+        cached = true;
     }
+    
     return ret;
 }

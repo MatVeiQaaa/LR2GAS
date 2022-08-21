@@ -1,10 +1,10 @@
 #pragma once
 
-#include <vector>
-
 #include "framework.h"
 
-//https://guidedhacking.com/threads/how-to-hack-any-game-first-internal-hack-dll-tutorial.12142/
+#include <vector>
+
+// https://guidedhacking.com/threads/how-to-hack-any-game-first-internal-hack-dll-tutorial.12142/
 
 namespace mem
 {

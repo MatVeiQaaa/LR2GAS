@@ -1,76 +1,46 @@
 #pragma once
 
-#include <cmath>
-
-#include "framework.h"
-#include "mem.h"
-
-//static double* hkGauge = (double*)0x187200;
-
-static double* hkGauge = (double*)0x187200;
-static double* hkPgreat = (double*)0x187258;
-static double* hkGreat = (double*)0x187250;
-static double* hkGood = (double*)0x187248;
-static double* hkBad = (double*)0x187240;
-static double* hkPoor = (double*)0x187238;
-static double* hkMashPoor = (double*)0x187230;
-
-struct GaugeIncrements
+struct GaugeIncrements final
 {
-	double pgreat;
-	double great;
-	double good;
-	double mashPoor;
-	double bad;
-	double missPoor;
+	double pgreat = 0.0;
+	double great = 0.0;
+	double good = 0.0;
+	double mashPoor = 0.0;
+	double bad = 0.0;
+	double missPoor = 0.0;
 };
 
-class Gauge
+class Gauge final
 {
-private:
-	double pgreatInc;
-	double greatInc;
-	double goodInc;
-	double badInc;
-	double missPoorInc;
-	double mashPoorInc;
-	double lowLimit;
-	double topLimit;
-	int decideIncrement;
-
-	bool CheckLowLimit(double increment)
-	{
-		if (vGauge + increment < lowLimit)
-		{
-			vGauge = lowLimit;
-			return 1;
-		}
-		return 0;
-	}
-	bool CheckTopLimit(double increment)
-	{
-		if (vGauge + increment > topLimit)
-		{
-			vGauge = topLimit;
-			return 1;
-		}
-		return 0;
-	}
 public:
-	double vGauge;
-	void InitializeGauge(double initialGauge, double lowLimit, double topLimit, const struct GaugeIncrements& GaugeIncrements)
+	Gauge() = default;
+
+	Gauge(const double initialGauge, const double lowLimit, const double topLimit, const struct GaugeIncrements& gaugeIncrements) :
+		vGauge(initialGauge),
+		lowLimit(lowLimit),
+		topLimit(topLimit),
+		pgreatInc(gaugeIncrements.pgreat),
+		greatInc(gaugeIncrements.great),
+		goodInc(gaugeIncrements.good),
+		badInc(gaugeIncrements.bad),
+		missPoorInc(gaugeIncrements.missPoor),
+		mashPoorInc(gaugeIncrements.mashPoor) {}
+
+	Gauge(const Gauge&) = default;
+	Gauge(Gauge&&) noexcept = default;
+
+	Gauge& operator=(const Gauge&) = default;
+	Gauge& operator=(Gauge&&) noexcept = default;
+
+	~Gauge() = default;
+
+	double getVGauge()
 	{
-		this->vGauge = initialGauge;
-		this->lowLimit = lowLimit;
-		this->topLimit = topLimit;
-		pgreatInc = GaugeIncrements.pgreat;
-		greatInc = GaugeIncrements.great;
-		goodInc = GaugeIncrements.good;
-		badInc = GaugeIncrements.bad;
-		missPoorInc = GaugeIncrements.missPoor;
-		mashPoorInc = GaugeIncrements.mashPoor;
+		return vGauge;
 	}
-	void IncrementGauge(int judgement, int gaugeType)
+
+	// TODO: gaugeType should be an enum.
+	void IncrementGauge(const int judgement, const int gaugeType)
 	{
 		switch (judgement)
 		{
@@ -155,6 +125,39 @@ public:
 		default:
 			break;
 		}
+	}
+
+private:
+	double vGauge = 0.0;
+
+	double pgreatInc = 0.0;
+	double greatInc = 0.0;
+	double goodInc = 0.0;
+	double badInc = 0.0;
+	double missPoorInc = 0.0;
+	double mashPoorInc = 0.0;
+	double lowLimit = 0.0;
+	double topLimit = 0.0;
+	int decideIncrement = 0;
+
+	bool CheckLowLimit(const double increment)
+	{
+		if (vGauge + increment < lowLimit)
+		{
+			vGauge = lowLimit;
+			return true;
+		}
+		return false;
+	}
+
+	bool CheckTopLimit(const double increment)
+	{
+		if (vGauge + increment > topLimit)
+		{
+			vGauge = topLimit;
+			return true;
+		}
+		return false;
 	}
 };
 

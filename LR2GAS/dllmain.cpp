@@ -1,3 +1,5 @@
+#include "framework.h"
+
 #include <iostream>
 #include <thread>
 #include <utility>
@@ -5,51 +7,65 @@
 #include "GaugeIncrementsAsm.h"
 #include "mem.h"
 #include "winver.h"
-#include "framework.h"
 
+// TODO: This should be a compiler define.
 #define DEBUG_CONSOLE_ENABLED
 
-uintptr_t g_moduleBase;
-
-double g_winver = 0;
-unsigned int g_win10Offset = 0;
-
-
-DWORD WINAPI HackThread(HMODULE hModule)
+namespace
 {
+	uintptr_t g_moduleBase = 0;
+
+	double g_winver = 0;
+	unsigned int g_win10Offset = 0;
+
+
+	DWORD WINAPI HackThread(HMODULE hModule)
+	{
 
 #ifdef DEBUG_CONSOLE_ENABLED
-	AllocConsole();
-	FILE* f = nullptr;
-	freopen_s(&f, "CONOUT$", "w", stdout);
+		// TODO: RAII!
+		BOOL hResult = AllocConsole();
+		if (hResult == NULL)
+		{
+			// TODO: throw an error.
+			// https://docs.microsoft.com/en-us/windows/console/allocconsole#return-value
+		}
+		// TODO: RAII!
+		FILE* f = nullptr;
+		freopen_s(&f, "CONOUT$", "w", stdout);
 
 #endif
-	
 
-	g_winver = getSysOpType();
-	//winver = 10;
-	if (g_winver >= 10)
-	{
-		g_win10Offset = 0x10000;
-	}
-	std::cout << "winver: " << g_winver << std::endl;
-	std::cout << "win10Offset: " << g_win10Offset << std::endl;
 
-	GetIncrements::HookIncrements();
+		g_winver = getSysOpType();
+		// winver = 10;
+		if (g_winver >= 10)
+		{
+			g_win10Offset = 0x10000;
+		}
+		std::cout << "winver: " << g_winver << std::endl;
+		std::cout << "win10Offset: " << g_win10Offset << std::endl;
+
+		GetIncrements::HookIncrements();
 
 #ifdef DEBUG_CONSOLE_ENABLED
-	while (true)
-	{
-	}
-	fclose(f);
-	FreeConsole();
+		// Infinite loop? Please explain why we need this.
+		while (true)
+		{
+		}
+
+		// WARNING: These lines are unreachable.
+		fclose(f);
+		FreeConsole();
 #endif
 
 #pragma warning(push)
 #pragma warning(disable : 6258)
-	TerminateThread(GetCurrentThread(), 0);
+		// TODO: Check the result.
+		TerminateThread(GetCurrentThread(), 0);
 #pragma warning(pop)
-	return 0;
+		return 0;
+	}
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule,
@@ -61,14 +77,16 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	{
 	case DLL_PROCESS_ATTACH:
 	{
-
-		auto* hThread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)HackThread, hModule, 0, nullptr);
+		// Why not std::thread?
+		HANDLE hThread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)HackThread, hModule, 0, nullptr);
 		if (hThread == nullptr)
 		{
 			std::cout << "Couldn't create main thread\n";
 			return FALSE;
 		}
 
+		// Why are we immediately closing the handle of the thread? Why are we not waiting for it to finish?
+		// Also, if we need this, check the return result: https://docs.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle#return-value
 		CloseHandle(hThread);
 	}
 	case DLL_THREAD_ATTACH:

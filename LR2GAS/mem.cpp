@@ -5,13 +5,14 @@
 #include "framework.h"
 #include "mem.h"
 
-//https://guidedhacking.com/threads/how-to-hack-any-game-first-internal-hack-dll-tutorial.12142/
+// https://guidedhacking.com/threads/how-to-hack-any-game-first-internal-hack-dll-tutorial.12142/
 
-constexpr unsigned int CALL = 0xE8;
-constexpr unsigned int JMP = 0xE9;
-constexpr unsigned int NOP = 0x90;
-constexpr unsigned int CALL_SIZE = 5;
-constexpr unsigned int JMP_SIZE = 5;
+// TODO: here should be a large comment explaining all of this mess.
+const unsigned int CALL = 0xE8;
+const unsigned int JMP = 0xE9;
+const unsigned int NOP = 0x90;
+const unsigned int CALL_SIZE = 5;
+const unsigned int JMP_SIZE = 5;
 
 bool mem::Detour32(void* src, void* dst, int len)
 {
@@ -19,8 +20,13 @@ bool mem::Detour32(void* src, void* dst, int len)
 	if (len < CALL_SIZE) return false;
 
 	// Setting EXECUTE+READ+WRITE permission for the bytes to alter.
-	DWORD curProtection;
-	VirtualProtect(src, len, PAGE_EXECUTE_READWRITE, &curProtection);
+	DWORD curProtection = 0;
+	BOOL hResult = VirtualProtect(src, len, PAGE_EXECUTE_READWRITE, &curProtection);
+	if (hResult == NULL)
+	{
+		// TODO: Throw an error.
+		// https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualprotect#return-value
+	}
 
 	// Allocating memory for stolen bytes.
 	void* gateway = VirtualAlloc(0, len + CALL_SIZE + JMP_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
@@ -36,6 +42,7 @@ bool mem::Detour32(void* src, void* dst, int len)
 	intptr_t  gatewayToDestinationRelativeAddr = (intptr_t)dst - (intptr_t)gateway - CALL_SIZE;
 
 	// Setting the CALL to destination up.
+	// TODO: use 'using' to extract the types.
 	*(char*)((uintptr_t)gateway) = CALL;
 	*(uintptr_t*)((uintptr_t)gateway + 1) = gatewayToDestinationRelativeAddr;
 
@@ -50,8 +57,13 @@ bool mem::Detour32(void* src, void* dst, int len)
 	*(uintptr_t*)((uintptr_t)src + 1) = relativeAddress;
 
 	// Restoring original page protection for source.
-	DWORD temp;
-	VirtualProtect(src, len, curProtection, &temp);
+	DWORD temp = 0;
+	hResult = VirtualProtect(src, len, curProtection, &temp);
+	if (hResult == NULL)
+	{
+		// TODO: Throw an error.
+		// https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualprotect#return-value
+	}
 
 	// Setting the JMP back from gateway up.
 	*(uintptr_t*)((uintptr_t)gateway + len + 5) = JMP;
@@ -66,8 +78,13 @@ bool mem::JmpDetour32(void* src, void* dst, int len)
 	if (len < CALL_SIZE) return false;
 
 	// Setting EXECUTE+READ+WRITE permission for the bytes to alter.
-	DWORD curProtection;
-	VirtualProtect(src, len, PAGE_EXECUTE_READWRITE, &curProtection);
+	DWORD curProtection = 0;
+	BOOL hResult = VirtualProtect(src, len, PAGE_EXECUTE_READWRITE, &curProtection);
+	if (hResult == NULL)
+	{
+		// TODO: Throw an error.
+		// https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualprotect#return-value
+	}
 
 	// Allocating memory for stolen bytes.
 	void* gateway = VirtualAlloc(0, len + CALL_SIZE + JMP_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
@@ -97,8 +114,13 @@ bool mem::JmpDetour32(void* src, void* dst, int len)
 	*(uintptr_t*)((uintptr_t)src + 1) = relativeAddress;
 
 	// Restoring original page protection for source.
-	DWORD temp;
-	VirtualProtect(src, len, curProtection, &temp);
+	DWORD temp = 0;
+	hResult = VirtualProtect(src, len, curProtection, &temp);
+	if (hResult == NULL)
+	{
+		// TODO: Throw an error.
+		// https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualprotect#return-value
+	}
 
 	// Setting the JMP back from gateway up.
 	*(uintptr_t*)((uintptr_t)gateway + len + 5) = JMP;
@@ -111,7 +133,8 @@ uintptr_t mem::FindDMAAddy(uintptr_t ptr, const std::vector<unsigned int>& offse
 {
 	uintptr_t addr = ptr;
 	std::cout << "being in FindDMAAddy loop\n";
-	for (const auto& offset : offsets)
+	// No need for '&' here since 'unsigned int' is a primitive.
+	for (const auto offset : offsets)
 	{
 		std::cout << "In the loop " << offset << std::endl;
 		addr = *(uintptr_t*)addr;
