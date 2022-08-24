@@ -6,7 +6,6 @@
 
 #include "GaugeIncrementsAsm.h"
 #include "mem.h"
-#include "winver.h"
 
 // TODO: This should be a compiler define.
 #define DEBUG_CONSOLE_ENABLED
@@ -14,10 +13,6 @@
 namespace
 {
 	uintptr_t g_moduleBase = 0;
-
-	double g_winver = 0;
-	unsigned int g_win10Offset = 0;
-
 
 	DWORD WINAPI HackThread(HMODULE hModule)
 	{
@@ -35,16 +30,6 @@ namespace
 		freopen_s(&f, "CONOUT$", "w", stdout);
 
 #endif
-
-
-		g_winver = getSysOpType();
-		// winver = 10;
-		if (g_winver >= 10)
-		{
-			g_win10Offset = 0x10000;
-		}
-		std::cout << "winver: " << g_winver << std::endl;
-		std::cout << "win10Offset: " << g_win10Offset << std::endl;
 
 		GetIncrements::HookIncrements();
 

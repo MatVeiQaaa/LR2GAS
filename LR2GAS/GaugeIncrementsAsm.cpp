@@ -7,22 +7,26 @@
 #include <thread>
 
 #include "mem.h"
+#include "winver.h"
 
 // TODO: remove ASM.
 // TODO: Everything should be done using RAII approach, Initialize-Finalize is C style and is not recommended.
 
 namespace
 {
-	double* const hkGauge = (double*)0x187200;
-	double* const hkPgreat = (double*)0x187258;
-	double* const hkGreat = (double*)0x187250;
-	double* const hkGood = (double*)0x187248;
-	double* const hkBad = (double*)0x187240;
-	double* const hkPoor = (double*)0x187238;
-	double* const hkMashPoor = (double*)0x187230;
+	double g_winver = 0;
+	unsigned int g_win10Offset = 0;
 
-	int* const vNotesNum = (int*)0x0CC27C;
-	int* const vMagicNumber = (int*)0x0CC28C;
+	double* const hkGauge = (double*)(0x187200 + g_win10Offset);
+	double* const hkPgreat = (double*)(0x187258 + g_win10Offset);
+	double* const hkGreat = (double*)(0x187250 + g_win10Offset);
+	double* const hkGood = (double*)(0x187248 + g_win10Offset);
+	double* const hkBad = (double*)(0x187240 + g_win10Offset);
+	double* const hkPoor = (double*)(0x187238 + g_win10Offset);
+	double* const hkMashPoor = (double*)(0x187230 + g_win10Offset);
+
+	int* const vNotesNum = (int*)(0x0CC27C + g_win10Offset);
+	int* const vMagicNumber = (int*)(0x0CC28C + g_win10Offset);
 
 	double total = 0.0;
 	double Pgreat = 0.0;
@@ -34,8 +38,10 @@ namespace
 
 	int initialGauge = 0;
 
+	bool isCourse = 0;
+
 	// TODO: This should be an enum.
-	int* const gaugeType = (int*)0x0EF840;
+	int* const gaugeType = (int*)(0x0EF840 + g_win10Offset);
 
 	int cycleNumber = 0;
 
@@ -85,10 +91,24 @@ namespace
 
 	void Initialize()
 	{
+		initialGauge = *gaugeType;
+
+		if (isCourse == 1 || *gaugeType == 2 || *gaugeType > 3)
+		{
+			if (isCourse == 1)
+			{
+				std::cout << "Course detected, GAS deactivated" << std::endl;
+			}
+			else
+			{
+				std::cout << "Gimmick gauge type detected, GAS deactivated" << std::endl;
+			}
+			return;
+		}
+
 		easy = GetIncrements::Easy();
 		groove = GetIncrements::Groove();
 		hard = GetIncrements::Hard();
-		initialGauge = *gaugeType;
 		cycleNumber = 0;
 
 		LogIncrementsToCout();
@@ -103,6 +123,11 @@ namespace
 
 	void WriteGraph()
 	{
+		if (isCourse == 1 || *gaugeType == 2 || *gaugeType > 3)
+		{
+			return;
+		}
+
 		easyGraph.graphNode[cycleNumber] = easyGauge.getVGauge();
 		grooveGraph.graphNode[cycleNumber] = grooveGauge.getVGauge();
 		hardGraph.graphNode[cycleNumber] = hardGauge.getVGauge();
@@ -111,9 +136,14 @@ namespace
 
 	void SetGraph()
 	{
+		if (isCourse == 1 || *gaugeType == 2 || *gaugeType > 3)
+		{
+			return;
+		}
+
 		for (int i = 0; i < 1000; i++)
 		{
-			int* hkGraphNode = (int*)(0x1873F4 + i * 4);
+			int* hkGraphNode = (int*)(0x1873F4 + g_win10Offset + i * 4);
 			switch (*gaugeType)
 			{
 			case 0:
@@ -127,7 +157,21 @@ namespace
 				break;
 			}
 		}
+	}
+
+	void GaugeRestore()
+	{
 		*gaugeType = initialGauge;
+	}
+
+	void SwitchForCourses()
+	{
+		isCourse = 1;
+	}
+
+	void SwitchForNormal()
+	{
+		isCourse = 0;
 	}
 
 	void IncrementGaugesThread(int judgement)
@@ -187,6 +231,11 @@ namespace
 
 	void IncrementGauges()
 	{
+		if (isCourse == 1 || *gaugeType == 2 || *gaugeType > 3)
+		{
+			return;
+		}
+
 		int judgement;
 		__asm
 		{
@@ -204,6 +253,11 @@ namespace
 		magicNumber = *vMagicNumber;
 		std::thread initialize(&Initialize);
 		initialize.detach();
+
+		if (isCourse == 1)
+		{
+			return;
+		}
 		std::thread initGauges(&InitGaugesThread);
 		initGauges.detach();
 	}
@@ -218,10 +272,23 @@ void GetIncrements::HookIncrements()
 	{
 		moduleBase = (uintptr_t)GetModuleHandle("LRHbody.exe");
 	}
+
+	g_winver = getSysOpType();
+	// winver = 10;
+	if (g_winver >= 10)
+	{
+		g_win10Offset = 0x10000;
+	}
+	std::cout << "winver: " << g_winver << std::endl;
+	std::cout << "win10Offset: " << g_win10Offset << std::endl;
+
 	mem::Detour32((void*)(moduleBase + 0x0B59FF), (void*)&ThreadStarter, 6);
 	mem::Detour32((void*)(moduleBase + 0x006308), (void*)&IncrementGauges, 5);
 	mem::Detour32((void*)(moduleBase + 0x01F2EF), (void*)&SetGraph, 6);
 	mem::Detour32((void*)(moduleBase + 0x005C45), (void*)&WriteGraph, 6);
+	mem::Detour32((void*)(moduleBase + 0x045CB2), (void*)&GaugeRestore, 6);
+	mem::Detour32((void*)(moduleBase + 0x0B5A88), (void*)&SwitchForCourses, 6);
+	mem::Detour32((void*)(moduleBase + 0x0B5C02), (void*)&SwitchForNormal, 6);
 }
 
 double GetIncrements::Total()
