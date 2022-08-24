@@ -24,7 +24,6 @@ namespace
 	int* const vNotesNum = (int*)0x0CC27C;
 	int* const vMagicNumber = (int*)0x0CC28C;
 
-	// static double ten = 10; // WTF???
 	double total = 0.0;
 	double Pgreat = 0.0;
 	double Great = 0.0;
@@ -104,8 +103,6 @@ namespace
 
 	void WriteGraph()
 	{
-		// WARNING: Conversion from double to int.
-		// TODO: FIX THIS!!!!
 		easyGraph.graphNode[cycleNumber] = easyGauge.getVGauge();
 		grooveGraph.graphNode[cycleNumber] = grooveGauge.getVGauge();
 		hardGraph.graphNode[cycleNumber] = hardGauge.getVGauge();
@@ -225,8 +222,6 @@ void GetIncrements::HookIncrements()
 	mem::Detour32((void*)(moduleBase + 0x006308), (void*)&IncrementGauges, 5);
 	mem::Detour32((void*)(moduleBase + 0x01F2EF), (void*)&SetGraph, 6);
 	mem::Detour32((void*)(moduleBase + 0x005C45), (void*)&WriteGraph, 6);
-	//mem::Detour32((void*)(moduleBase + 0x00632E), (void*)&GaugeShiftThread, 5);
-
 }
 
 double GetIncrements::Total()
@@ -346,7 +341,6 @@ double GetIncrements::Total()
 
 GaugeIncrements GetIncrements::Easy()
 {
-	// double total = GetIncrements::Total(); // Not used?
 	constexpr double easyConst = 1.2;
 	constexpr double bad = -3.2;
 	constexpr double poor = -4.8;
@@ -379,7 +373,6 @@ GaugeIncrements GetIncrements::Easy()
 
 GaugeIncrements GetIncrements::Groove()
 {
-	// double total = GetIncrements::Total(); // Not used?
 	constexpr double bad = -4;
 	constexpr double poor = -6;
 	constexpr double mashPoor = -2;
@@ -408,7 +401,7 @@ GaugeIncrements GetIncrements::Groove()
 
 GaugeIncrements GetIncrements::Hard()
 {
-	// double total = GetIncrements::Total(); // Not used?
+	double total = GetIncrements::Total();
 	constexpr double pgreat = 0.1;
 	constexpr double good = 0.05;
 	constexpr double bad = -6;
