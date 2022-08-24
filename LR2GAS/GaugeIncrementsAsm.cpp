@@ -265,7 +265,7 @@ namespace
 void GetIncrements::HookIncrements()
 {
 	uintptr_t moduleBase;
-	// TOOD: check for errors.
+	// TODO: check for errors.
 	// https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlea#return-value
 	if ((moduleBase = (uintptr_t)GetModuleHandle("LR2body.exe")) == 0)
 	{
@@ -273,7 +273,7 @@ void GetIncrements::HookIncrements()
 	}
 
 	double g_winver = getSysOpType();
-	g_winver = 10;
+	//g_winver = 10;
 	if (g_winver >= 10)
 	{
 		g_win10Offset = 0x10000;
