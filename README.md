@@ -5,4 +5,6 @@ It works by calculating "Easy", "Groove" and "Hard" gauge types simultaniously d
 
 NOTE: 1. Displays the texture for gauge graph on score result screen respective to the gauge you started with. Very difficult problem to tackle.
 
-	2. Doesn't support courses and gauges that arent EASY, GROOVE or HARD yet.
+2. Doesn't support courses and gauges that arent EASY, GROOVE or HARD yet.
+
+Cudos to https://github.com/SayakaIsBaka for great help in solving a few issues and for testing on Windows 10.
