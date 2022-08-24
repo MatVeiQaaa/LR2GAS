@@ -8,7 +8,7 @@
 #include "mem.h"
 
 // TODO: This should be a compiler define.
-#define DEBUG_CONSOLE_ENABLED
+//#define DEBUG_CONSOLE_ENABLED
 
 namespace
 {
