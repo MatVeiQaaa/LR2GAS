@@ -7,4 +7,4 @@ NOTE: 1. Displays the texture for gauge graph on score result screen respective 
 
 2. Doesn't support courses and gauges that arent EASY, GROOVE or HARD yet.
 
-Cudos to https://github.com/SayakaIsBaka for great help in solving a few issues and for testing on Windows 10.
+Kudos to https://github.com/SayakaIsBaka for great help in solving a few issues and for testing on Windows 10.
