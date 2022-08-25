@@ -147,15 +147,20 @@ namespace
 			{
 			case 0:
 				*hkGraphNode = grooveGraph.graphNode[i];
+				grooveGraph.graphNode[i] = 0;
 				break;
 			case 1:
 				*hkGraphNode = hardGraph.graphNode[i];
+				hardGraph.graphNode[i] = 0;
 				break;
 			case 3:
 				*hkGraphNode = easyGraph.graphNode[i];
+				easyGraph.graphNode[i] = 0;
 				break;
 			}
 		}
+
+
 	}
 
 	void GaugeRestore()
