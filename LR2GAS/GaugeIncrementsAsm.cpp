@@ -142,22 +142,22 @@ namespace
 
 		for (int i = 0; i < 1000; i++)
 		{
-			int* hkGraphNode = (int*)(0x1873F4 + g_win10Offset + i * 4);
+			int* hkGraphNode = (int*)(0x1873F4 + g_win10Offset + i * sizeof(int));
 			switch (*gaugeType)
 			{
 			case 0:
 				*hkGraphNode = grooveGraph.graphNode[i];
-				grooveGraph.graphNode[i] = 0;
 				break;
 			case 1:
 				*hkGraphNode = hardGraph.graphNode[i];
-				hardGraph.graphNode[i] = 0;
 				break;
 			case 3:
 				*hkGraphNode = easyGraph.graphNode[i];
-				easyGraph.graphNode[i] = 0;
 				break;
 			}
+			grooveGraph.graphNode[i] = 0;
+			hardGraph.graphNode[i] = 0;
+			easyGraph.graphNode[i] = 0;
 		}
 
 
