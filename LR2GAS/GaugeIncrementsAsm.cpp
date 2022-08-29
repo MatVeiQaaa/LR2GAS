@@ -27,14 +27,6 @@ namespace
 	int* vNotesNum = (int*)0x0CC27C;
 	int* vMagicNumber = (int*)0x0CC28C;
 
-	double total = 0.0;
-	double Pgreat = 0.0;
-	double Great = 0.0;
-	double Good = 0.0;
-	double Bad = 0.0;
-	double Poor = 0.0;
-	double MashPoor = 0.0;
-
 	int initialGauge = 0;
 
 	bool isCourse = 0;
@@ -127,9 +119,9 @@ namespace
 			return;
 		}
 
-		easyGraph.graphNode[cycleNumber] = easyGauge.getVGauge();
-		grooveGraph.graphNode[cycleNumber] = grooveGauge.getVGauge();
-		hardGraph.graphNode[cycleNumber] = hardGauge.getVGauge();
+		easyGraph.graphNode[cycleNumber] = static_cast<int>(easyGauge.getVGauge());
+		grooveGraph.graphNode[cycleNumber] = static_cast<int>(grooveGauge.getVGauge());
+		hardGraph.graphNode[cycleNumber] = static_cast<int>(hardGauge.getVGauge());
 		cycleNumber++;
 	}
 
@@ -243,10 +235,8 @@ namespace
 		int judgement;
 		__asm
 		{
-			PUSH EAX
-			MOV EAX, [EBP + 0x1C]
-			MOV judgement, EAX
-			POP EAX
+			PUSH [EBP + 0x1C]
+			POP judgement
 		};
 		IncrementGaugesThread(judgement);
 	}
@@ -309,195 +299,104 @@ void GetIncrements::HookIncrements()
 
 double GetIncrements::Total()
 {
-	static constexpr double CONST_2 = 2;
-	static constexpr double CONST_3 = 3;
-	static constexpr double CONST_4 = 4;
-	static constexpr double CONST_5 = 5;
-	static constexpr double CONST_6 = 6;
-	static constexpr double CONST_7 = 7;
-	static constexpr double CONST_10 = 10;
-	static constexpr double CONST_15 = 15;
-	static constexpr double CONST_20 = 20;
-	static constexpr double CONST_30 = 30;
-	static constexpr double CONST_45 = 45;
-	static constexpr double CONST_60 = 60;
-	static constexpr double CONST_65 = 65;
-	static constexpr double CONST_125 = 125;
-	static constexpr double CONST_250 = 250;
-	static constexpr double CONST_500 = 500;
-
 	if (notesNum <= 20)
 	{
-		total = 10;
-		return total;
+		return 10.0;
 	}
 	if (notesNum <= 30)
 	{
-		__asm
-		{
-			FLD notesNum
-			FSUB CONST_20
-			FDIV CONST_10
-			FMUL CONST_2
-			FSUBR CONST_10
-			FSTP total
-		};
-		return total;
-	}
-	if (notesNum <= 45)
-	{
-		__asm
-		{
-			FLD notesNum
-			FSUB CONST_30
-			FDIV CONST_15
-			FSUBR CONST_7
-			FSTP total
-		};
-		return total;
+		// Is this the correct value?
+		// It doesn't align with other formulas.
+		return 14.0 - (notesNum / 5.0);
 	}
 	if (notesNum <= 60)
 	{
-		__asm
-		{
-			FLD notesNum
-			FSUB CONST_45
-			FDIV CONST_15
-			FSUBR CONST_6
-			FSTP total
-		};
-		return total;
+		return 9.0 - (notesNum / 15.0);
 	}
 	if (notesNum <= 125)
 	{
-		__asm
-		{
-			FLD notesNum
-			FSUB CONST_60
-			FDIV CONST_65
-			FSUBR CONST_5
-			FSTP total
-		};
-		return total;
+		return 5.0 - ((notesNum - 60.0) / 65.0);
 	}
 	if (notesNum <= 250)
 	{
-		__asm
-		{
-			FLD notesNum
-			FSUB CONST_125
-			FDIV CONST_125
-			FSUBR CONST_4
-			FSTP total
-		};
-		return total;
+		return 5.0 - (notesNum / 125.0);
 	}
 	if (notesNum <= 500)
 	{
-		__asm
-		{
-			FLD notesNum
-			FSUB CONST_250
-			FDIV CONST_250
-			FSUBR CONST_3
-			FSTP total
-		};
-		return total;
+		return 4.0 - (notesNum / 250.0);
 	}
 	if (notesNum <= 1000)
 	{
-		__asm
-		{
-			FLD CONST_500
-			FLD notesNum
-			FSUB CONST_500
-			FDIVRP ST(1), ST
-			FLD CONST_2
-			FSUBRP ST(1), ST
-			FSTP total
-		};
-		return total;
+		return 3.0 - (notesNum / 500.0);
 	}
-	total = 1;
-	return total;
+	return 1;
 }
 
 GaugeIncrements GetIncrements::Easy()
 {
 	constexpr double easyConst = 1.2;
-	constexpr double bad = -3.2;
-	constexpr double poor = -4.8;
-	constexpr double mashPoor = -1.6;
+
+	GaugeIncrements result;
+	result.pgreat = easyConst * (magicNumber / notesNum);
+	result.great = easyConst * (magicNumber / notesNum);
+	result.good = easyConst * (magicNumber / (notesNum * 2.0));
+	result.mashPoor = -1.6;
+	result.bad = -3.2;
+	result.missPoor = -4.8;
+
+	// Here we should leave some garbage on the FPU stack for whatever reason.
+	double fst0 = notesNum * 2.0;
+	double fst1 = magicNumber / notesNum;
+	double fst2 = notesNum;
 
 	__asm
 	{
-		FLD notesNum
-		FLD magicNumber
-		FDIV ST, ST(1)
-		FLD easyConst
-		FMUL ST, ST(1)
-		FST Pgreat
-		FSTP Great
-		FLD notesNum
-		FADD ST, ST
-		FLD magicNumber
-		FDIV ST, ST(1)
-		FMUL easyConst
-		FSTP Good
-		FLD mashPoor
-		FLD poor
-		FLD bad
-		FSTP Bad
-		FSTP Poor
-		FSTP MashPoor
-	};
-	return { Pgreat, Great, Good, MashPoor, Bad, Poor };
+		FLD fst2;
+		FLD fst1;
+		FLD fst0;
+	}
+
+	return result;
 }
 
 GaugeIncrements GetIncrements::Groove()
 {
-	constexpr double bad = -4;
-	constexpr double poor = -6;
-	constexpr double mashPoor = -2;
+	GaugeIncrements result;
+	result.pgreat = magicNumber / notesNum;
+	result.great = magicNumber / notesNum;
+	result.good = magicNumber / (notesNum * 2.0);
+	result.mashPoor = -2.0;
+	result.bad = -4.0;
+	result.missPoor = -6.0;
 
+	// Here we should leave some garbage on the FPU stack for whatever reason.
 	__asm
 	{
-		FLD notesNum
-		FLD magicNumber
-		FDIV ST, ST(1)
-		FST Great
-		FSTP Pgreat
-		FLD magicNumber
-		FLD notesNum
-		FADD ST, ST
-		FDIVP ST(1), ST
-		FSTP Good
-		FLD mashPoor
-		FLD poor
-		FLD bad
-		FSTP Bad
-		FSTP Poor
-		FSTP MashPoor
-	};
-	return { Pgreat, Great, Good, MashPoor, Bad, Poor };
+		FLD notesNum;
+	}
+
+	return result;
 }
 
 GaugeIncrements GetIncrements::Hard()
 {
 	double total = GetIncrements::Total();
-	constexpr double pgreat = 0.1;
-	constexpr double good = 0.05;
 	constexpr double bad = -6;
 	constexpr double poor = -10;
 	constexpr double mashPoor = -2;
 
+	GaugeIncrements result;
+	result.pgreat = 0.1;
+	result.great = 0.1;
+	result.good = 0.05;
+	
+	double MashPoor = 0.0;
+	double Bad = 0.0;
+	double Poor = 0.0;
+	
+	// I am not gonna try to understand what is going on in here.
 	__asm
 	{
-		FLD good
-		FLD pgreat
-		FST Pgreat
-		FSTP Great
-		FSTP Good
 		FLD total
 		FLD bad
 		FSTP ST(5)
@@ -510,5 +409,10 @@ GaugeIncrements GetIncrements::Hard()
 		FMUL mashPoor
 		FSTP MashPoor
 	};
-	return { Pgreat, Great, Good, MashPoor, Bad, Poor };
+
+	result.mashPoor = MashPoor;
+	result.bad = Bad;
+	result.missPoor = Poor;
+
+	return result;
 }
