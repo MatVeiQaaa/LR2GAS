@@ -9,7 +9,6 @@
 #include "mem.h"
 #include "winver.h"
 
-// TODO: remove ASM.
 // TODO: Everything should be done using RAII approach, Initialize-Finalize is C style and is not recommended.
 
 namespace
@@ -299,33 +298,31 @@ void GetIncrements::HookIncrements()
 
 double GetIncrements::Total()
 {
-	if (notesNum <= 20)
+	if (notesNum < 20)
 	{
 		return 10.0;
 	}
-	if (notesNum <= 30)
+	if (notesNum < 30)
 	{
-		// Is this the correct value?
-		// It doesn't align with other formulas.
 		return 14.0 - (notesNum / 5.0);
 	}
-	if (notesNum <= 60)
+	if (notesNum < 60)
 	{
 		return 9.0 - (notesNum / 15.0);
 	}
-	if (notesNum <= 125)
+	if (notesNum < 125)
 	{
 		return 5.0 - ((notesNum - 60.0) / 65.0);
 	}
-	if (notesNum <= 250)
+	if (notesNum < 250)
 	{
 		return 5.0 - (notesNum / 125.0);
 	}
-	if (notesNum <= 500)
+	if (notesNum < 500)
 	{
 		return 4.0 - (notesNum / 250.0);
 	}
-	if (notesNum <= 1000)
+	if (notesNum < 1000)
 	{
 		return 3.0 - (notesNum / 500.0);
 	}
@@ -344,18 +341,6 @@ GaugeIncrements GetIncrements::Easy()
 	result.bad = -3.2;
 	result.missPoor = -4.8;
 
-	// Here we should leave some garbage on the FPU stack for whatever reason.
-	double fst0 = notesNum * 2.0;
-	double fst1 = magicNumber / notesNum;
-	double fst2 = notesNum;
-
-	__asm
-	{
-		FLD fst2;
-		FLD fst1;
-		FLD fst0;
-	}
-
 	return result;
 }
 
@@ -369,50 +354,20 @@ GaugeIncrements GetIncrements::Groove()
 	result.bad = -4.0;
 	result.missPoor = -6.0;
 
-	// Here we should leave some garbage on the FPU stack for whatever reason.
-	__asm
-	{
-		FLD notesNum;
-	}
-
 	return result;
 }
 
 GaugeIncrements GetIncrements::Hard()
 {
 	double total = GetIncrements::Total();
-	constexpr double bad = -6;
-	constexpr double poor = -10;
-	constexpr double mashPoor = -2;
 
 	GaugeIncrements result;
 	result.pgreat = 0.1;
 	result.great = 0.1;
 	result.good = 0.05;
-	
-	double MashPoor = 0.0;
-	double Bad = 0.0;
-	double Poor = 0.0;
-	
-	// I am not gonna try to understand what is going on in here.
-	__asm
-	{
-		FLD total
-		FLD bad
-		FSTP ST(5)
-		FMUL ST, ST(4)
-		FSTP Bad
-		FLD total
-		FMUL poor
-		FSTP Poor
-		FLD total
-		FMUL mashPoor
-		FSTP MashPoor
-	};
-
-	result.mashPoor = MashPoor;
-	result.bad = Bad;
-	result.missPoor = Poor;
+	result.mashPoor = total * -2.0;
+	result.bad = total * -6.0;
+	result.missPoor = total * -10.0;
 
 	return result;
 }
