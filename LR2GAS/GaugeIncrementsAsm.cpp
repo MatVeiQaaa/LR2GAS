@@ -158,7 +158,15 @@ namespace
 		{
 			return;
 		}
-
+		int* pointerToArrayForGraph = nullptr;
+		__asm
+		{
+			MOV pointerToArrayForGraph, ESI
+		};
+		if (pointerToArrayForGraph != (int*)0x1873F4)
+		{
+			return;
+		}
 		easyGraph.graphNode[cycleNumber] = static_cast<int>(easyGauge.getVGauge());
 		grooveGraph.graphNode[cycleNumber] = static_cast<int>(grooveGauge.getVGauge());
 		hardGraph.graphNode[cycleNumber] = static_cast<int>(hardGauge.getVGauge());
