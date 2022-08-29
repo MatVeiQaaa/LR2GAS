@@ -66,7 +66,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		HANDLE hThread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)HackThread, hModule, 0, nullptr);
 		if (hThread == nullptr)
 		{
-			std::cout << "Couldn't create main thread\n";
+			std::cout << "Couldn't create main thread" << std::endl;
 			return FALSE;
 		}
 

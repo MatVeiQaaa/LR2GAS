@@ -56,26 +56,27 @@ namespace
 	Graph hardGraph = {};
 
 	void LogIncrementsToCout() {
-		std::cout << "Easy Increments: " << std::endl;
-		std::cout << easy.pgreat << std::endl;
-		std::cout << easy.great << std::endl;
-		std::cout << easy.good << std::endl;
-		std::cout << easy.bad << std::endl;
-		std::cout << easy.missPoor << std::endl;
-		std::cout << easy.mashPoor << std::endl;
-		std::cout << "Groove Increments: " << std::endl;
-		std::cout << groove.pgreat << std::endl;
-		std::cout << groove.great << std::endl;
-		std::cout << groove.good << std::endl;
-		std::cout << groove.bad << std::endl;
-		std::cout << groove.missPoor << std::endl;
-		std::cout << groove.mashPoor << std::endl;
-		std::cout << "Hard Increments: " << std::endl;
-		std::cout << hard.pgreat << std::endl;
-		std::cout << hard.great << std::endl;
-		std::cout << hard.good << std::endl;
-		std::cout << hard.bad << std::endl;
-		std::cout << hard.missPoor << std::endl;
+		// TODO: test with std::cout.sync_with_stdio(false).
+		std::cout << "Easy Increments:" << '\n';
+		std::cout << easy.pgreat << '\n';
+		std::cout << easy.great << '\n';
+		std::cout << easy.good << '\n';
+		std::cout << easy.bad << '\n';
+		std::cout << easy.missPoor << '\n';
+		std::cout << easy.mashPoor << '\n';
+		std::cout << "Groove Increments:" << '\n';
+		std::cout << groove.pgreat << '\n';
+		std::cout << groove.great << '\n';
+		std::cout << groove.good << '\n';
+		std::cout << groove.bad << '\n';
+		std::cout << groove.missPoor << '\n';
+		std::cout << groove.mashPoor << '\n';
+		std::cout << "Hard Increments:" << '\n';;
+		std::cout << hard.pgreat << '\n';
+		std::cout << hard.great << '\n';
+		std::cout << hard.good << '\n';
+		std::cout << hard.bad << '\n';
+		std::cout << hard.missPoor << '\n';
 		std::cout << hard.mashPoor << std::endl;
 	}
 
@@ -218,9 +219,9 @@ namespace
 			break;
 		}
 
-		std::cout << "Easy: " << easyGauge.getVGauge() << std::endl;
-		std::cout << "Groove: " << grooveGauge.getVGauge() << std::endl;
-		std::cout << "Hard: " << hardGauge.getVGauge() << std::endl;
+		std::cout << "Easy: " << easyGauge.getVGauge() << '\n';
+		std::cout << "Groove: " << grooveGauge.getVGauge() << '\n';
+		std::cout << "Hard: " << hardGauge.getVGauge() << '\n';
 		std::cout << "Hook Gauge: " << *hkGauge << std::endl;
 	}
 
@@ -284,7 +285,7 @@ void GetIncrements::HookIncrements()
 
 		gaugeType = (int*)(0x0EF840 + g_win10Offset);
 	}
-	std::cout << "winver: " << g_winver << std::endl;
+	std::cout << "winver: " << g_winver << '\n';
 	std::cout << "win10Offset: " << g_win10Offset << std::endl;
 
 	mem::Detour32((void*)(moduleBase + 0x0B59FF), (void*)&ThreadStarter, 6);
