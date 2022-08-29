@@ -32,6 +32,7 @@ namespace
 
 	// TODO: This should be an enum.
 	int* gaugeType = (int*)0x0EF840;
+	int* battleType = (int*)0x0EF884;
 
 	int cycleNumber = 0;
 
@@ -84,11 +85,15 @@ namespace
 	{
 		initialGauge = *gaugeType;
 
-		if (isCourse == 1 || *gaugeType == 2 || *gaugeType > 3)
+		if (isCourse == 1 || *battleType == 4 || *gaugeType == 2 || *gaugeType > 3)
 		{
 			if (isCourse == 1)
 			{
 				std::cout << "Course detected, GAS deactivated" << std::endl;
+			}
+			else if (*battleType == 4)
+			{
+				std::cout << "G-Battle detected, GAS deactivated" << std::endl;
 			}
 			else
 			{
@@ -100,6 +105,41 @@ namespace
 		easy = GetIncrements::Easy();
 		groove = GetIncrements::Groove();
 		hard = GetIncrements::Hard();
+
+		switch (*gaugeType)
+		{
+		case 0:
+			{
+				*hkPgreat = groove.pgreat;
+				*hkGreat = groove.great;
+				*hkGood = groove.good;
+				*hkBad = groove.bad;
+				*hkPoor = groove.missPoor;
+				*hkMashPoor = groove.mashPoor;
+			}
+			break;
+		case 1:
+			{
+				*hkPgreat = hard.pgreat;
+				*hkGreat = hard.great;
+				*hkGood = hard.good;
+				*hkBad = hard.bad;
+				*hkPoor = hard.missPoor;
+				*hkMashPoor = hard.mashPoor;
+			}
+			break;
+		case 3:
+			{
+				*hkPgreat = easy.pgreat;
+				*hkGreat = easy.great;
+				*hkGood = easy.good;
+				*hkBad = easy.bad;
+				*hkPoor = easy.missPoor;
+				*hkMashPoor = easy.mashPoor;
+			}
+			break;
+		}
+
 		cycleNumber = 0;
 
 		LogIncrementsToCout();
@@ -114,7 +154,7 @@ namespace
 
 	void WriteGraph()
 	{
-		if (isCourse == 1 || *gaugeType == 2 || *gaugeType > 3)
+		if (isCourse == 1 || *battleType == 4 || *gaugeType == 2 || *gaugeType > 3)
 		{
 			return;
 		}
@@ -127,7 +167,7 @@ namespace
 
 	void SetGraph()
 	{
-		if (isCourse == 1 || *gaugeType == 2 || *gaugeType > 3)
+		if (isCourse == 1 || *battleType == 4 || *gaugeType == 2 || *gaugeType > 3)
 		{
 			return;
 		}
@@ -157,6 +197,16 @@ namespace
 
 	void GaugeRestore()
 	{
+		int* opType = nullptr;
+		__asm
+		{
+			PUSH [ESP + 0x48]
+			POP opType
+		};
+		if (opType != (int*)0x6F90)
+		{
+			return;
+		}
 		*gaugeType = initialGauge;
 	}
 
@@ -227,17 +277,24 @@ namespace
 
 	void IncrementGauges()
 	{
-		if (isCourse == 1 || *gaugeType == 2 || *gaugeType > 3)
+		if (isCourse == 1 || *battleType == 4 || *gaugeType == 2 || *gaugeType > 3)
 		{
 			return;
 		}
 
 		int judgement;
+		int isGhost;
 		__asm
 		{
 			PUSH [EBP + 0x1C]
 			POP judgement
+			PUSH [EBP + 0x24]
+			POP isGhost
 		};
+		if (isGhost == 1)
+		{
+			return;
+		}
 		IncrementGaugesThread(judgement);
 	}
 
@@ -289,10 +346,11 @@ void GetIncrements::HookIncrements()
 	std::cout << "win10Offset: " << g_win10Offset << std::endl;
 
 	mem::Detour32((void*)(moduleBase + 0x0B59FF), (void*)&ThreadStarter, 6);
+	mem::Detour32((void*)(moduleBase + 0x0AD669), (void*)&ThreadStarter, 5);
 	mem::Detour32((void*)(moduleBase + 0x006308), (void*)&IncrementGauges, 5);
 	mem::Detour32((void*)(moduleBase + 0x01F2EF), (void*)&SetGraph, 6);
 	mem::Detour32((void*)(moduleBase + 0x005C45), (void*)&WriteGraph, 6);
-	mem::Detour32((void*)(moduleBase + 0x045CB2), (void*)&GaugeRestore, 6);
+	mem::Detour32((void*)(moduleBase + 0x031A74), (void*)&GaugeRestore, 5);
 	mem::Detour32((void*)(moduleBase + 0x0B5A88), (void*)&SwitchForCourses, 6);
 	mem::Detour32((void*)(moduleBase + 0x0B5C02), (void*)&SwitchForNormal, 6);
 }
