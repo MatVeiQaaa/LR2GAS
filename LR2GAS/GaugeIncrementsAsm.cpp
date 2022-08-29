@@ -163,7 +163,7 @@ namespace
 		{
 			MOV pointerToArrayForGraph, ESI
 		};
-		if (pointerToArrayForGraph != (int*)0x1873F4)
+		if (pointerToArrayForGraph != (int*)(0x1873F4 + g_win10Offset))
 		{
 			return;
 		}
