@@ -32,7 +32,7 @@ bool mem::Detour32(void* src, void* dst, int len)
 	void* gateway = VirtualAlloc(0, len + CALL_SIZE + JMP_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	if (gateway == nullptr)
 	{
-		std::cout << "Couldn't allocate memory for stolen bytes\n";
+		std::cout << "Couldn't allocate memory for stolen bytes" << std::endl;
 		return false;
 	}
 
@@ -90,7 +90,7 @@ bool mem::JmpDetour32(void* src, void* dst, int len)
 	void* gateway = VirtualAlloc(0, len + CALL_SIZE + JMP_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	if (gateway == nullptr)
 	{
-		std::cout << "Couldn't allocate memory for stolen bytes\n";
+		std::cout << "Couldn't allocate memory for stolen bytes" << std::endl;
 		return false;
 	}
 
@@ -136,11 +136,11 @@ uintptr_t mem::FindDMAAddy(uintptr_t ptr, const std::vector<unsigned int>& offse
 	// No need for '&' here since 'unsigned int' is a primitive.
 	for (const auto offset : offsets)
 	{
-		std::cout << "In the loop " << offset << std::endl;
+		std::cout << "In the loop " << offset << '\n';
 		addr = *(uintptr_t*)addr;
 		addr += offset;
-		std::cout << (int*)addr << std::endl;
+		std::cout << (int*)addr << '\n';
 	}
-	std::cout << "Exit FindDMAAddy\n";
+	std::cout << "Exit FindDMAAddy" << std::endl;
 	return addr;
 }
