@@ -109,35 +109,35 @@ namespace
 		switch (*gaugeType)
 		{
 		case 0:
-			{
-				*hkPgreat = groove.pgreat;
-				*hkGreat = groove.great;
-				*hkGood = groove.good;
-				*hkBad = groove.bad;
-				*hkPoor = groove.missPoor;
-				*hkMashPoor = groove.mashPoor;
-			}
-			break;
+		{
+			*hkPgreat = groove.pgreat;
+			*hkGreat = groove.great;
+			*hkGood = groove.good;
+			*hkBad = groove.bad;
+			*hkPoor = groove.missPoor;
+			*hkMashPoor = groove.mashPoor;
+		}
+		break;
 		case 1:
-			{
-				*hkPgreat = hard.pgreat;
-				*hkGreat = hard.great;
-				*hkGood = hard.good;
-				*hkBad = hard.bad;
-				*hkPoor = hard.missPoor;
-				*hkMashPoor = hard.mashPoor;
-			}
-			break;
+		{
+			*hkPgreat = hard.pgreat;
+			*hkGreat = hard.great;
+			*hkGood = hard.good;
+			*hkBad = hard.bad;
+			*hkPoor = hard.missPoor;
+			*hkMashPoor = hard.mashPoor;
+		}
+		break;
 		case 3:
-			{
-				*hkPgreat = easy.pgreat;
-				*hkGreat = easy.great;
-				*hkGood = easy.good;
-				*hkBad = easy.bad;
-				*hkPoor = easy.missPoor;
-				*hkMashPoor = easy.mashPoor;
-			}
-			break;
+		{
+			*hkPgreat = easy.pgreat;
+			*hkGreat = easy.great;
+			*hkGood = easy.good;
+			*hkBad = easy.bad;
+			*hkPoor = easy.missPoor;
+			*hkMashPoor = easy.mashPoor;
+		}
+		break;
 		}
 
 		cycleNumber = 0;
@@ -208,7 +208,7 @@ namespace
 		int* opType = nullptr;
 		__asm
 		{
-			PUSH [ESP + 0x48]
+			PUSH[ESP + 0x48]
 			POP opType
 		};
 		if (opType != (int*)0x6F90)
@@ -294,9 +294,9 @@ namespace
 		int isGhost;
 		__asm
 		{
-			PUSH [EBP + 0x1C]
+			PUSH[EBP + 0x1C]
 			POP judgement
-			PUSH [EBP + 0x24]
+			PUSH[EBP + 0x24]
 			POP isGhost
 		};
 		if (isGhost == 1)
