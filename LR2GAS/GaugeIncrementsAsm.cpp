@@ -15,24 +15,24 @@ namespace
 {
 	unsigned int g_win10Offset = 0;
 
-	double* hkGauge = (double*)0x187200;
-	double* hkPgreat = (double*)0x187258;
-	double* hkGreat = (double*)0x187250;
-	double* hkGood = (double*)0x187248;
-	double* hkBad = (double*)0x187240;
-	double* hkPoor = (double*)0x187238;
-	double* hkMashPoor = (double*)0x187230;
+	double* hkGauge;
+	double* hkPgreat;
+	double* hkGreat;
+	double* hkGood;
+	double* hkBad;
+	double* hkPoor;
+	double* hkMashPoor;
 
-	int* vNotesNum = (int*)0x0CC27C;
-	int* vMagicNumber = (int*)0x0CC28C;
+	int* vNotesNum;
+	int* vMagicNumber;
 
 	int initialGauge = 0;
 
 	bool isCourse = 0;
 
 	// TODO: This should be an enum.
-	int* gaugeType = (int*)0x0EF840;
-	int* battleType = (int*)0x0EF884;
+	int* gaugeType;
+	int* battleType;
 
 	int cycleNumber = 0;
 
@@ -322,6 +322,32 @@ namespace
 	}
 }
 
+static void set_global_addresses()
+{
+	const double g_winver = getSysOpType();
+	if (g_winver >= 10)
+		g_win10Offset = 0x10000;
+	else
+		g_win10Offset = 0;
+
+	std::cout << "winver: " << g_winver << '\n'
+		<< "win10Offset: " << g_win10Offset << '\n';
+
+	hkGauge = (double*)(0x187200 + g_win10Offset);
+	hkPgreat = (double*)(0x187258 + g_win10Offset);
+	hkGreat = (double*)(0x187250 + g_win10Offset);
+	hkGood = (double*)(0x187248 + g_win10Offset);
+	hkBad = (double*)(0x187240 + g_win10Offset);
+	hkPoor = (double*)(0x187238 + g_win10Offset);
+	hkMashPoor = (double*)(0x187230 + g_win10Offset);
+
+	vNotesNum = (int*)(0x0CC27C + g_win10Offset);
+	vMagicNumber = (int*)(0x0CC28C + g_win10Offset);
+
+	gaugeType = (int*)(0x0EF840 + g_win10Offset);
+	battleType = (int*)(0x0EF884 + g_win10Offset);
+}
+
 void GetIncrements::HookIncrements()
 {
 	uintptr_t moduleBase;
@@ -332,27 +358,7 @@ void GetIncrements::HookIncrements()
 		moduleBase = (uintptr_t)GetModuleHandle("LRHbody.exe");
 	}
 
-	double g_winver = getSysOpType();
-	//g_winver = 10;
-	if (g_winver >= 10)
-	{
-		g_win10Offset = 0x10000;
-		hkGauge = (double*)(0x187200 + g_win10Offset);
-		hkPgreat = (double*)(0x187258 + g_win10Offset);
-		hkGreat = (double*)(0x187250 + g_win10Offset);
-		hkGood = (double*)(0x187248 + g_win10Offset);
-		hkBad = (double*)(0x187240 + g_win10Offset);
-		hkPoor = (double*)(0x187238 + g_win10Offset);
-		hkMashPoor = (double*)(0x187230 + g_win10Offset);
-
-		vNotesNum = (int*)(0x0CC27C + g_win10Offset);
-		vMagicNumber = (int*)(0x0CC28C + g_win10Offset);
-
-		gaugeType = (int*)(0x0EF840 + g_win10Offset);
-		battleType = (int*)(0x0EF884 + g_win10Offset);
-	}
-	std::cout << "winver: " << g_winver << '\n';
-	std::cout << "win10Offset: " << g_win10Offset << std::endl;
+	set_global_addresses();
 
 	mem::Detour32((void*)(moduleBase + 0x0B59FF), (void*)&ThreadStarter, 6);
 	mem::Detour32((void*)(moduleBase + 0x0AD669), (void*)&ThreadStarter, 5);
