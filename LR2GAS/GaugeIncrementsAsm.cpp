@@ -322,15 +322,30 @@ namespace
 	}
 }
 
+static bool is_wine()
+{
+	HMODULE hntdll = GetModuleHandle("ntdll.dll");
+	if (!hntdll)
+	{
+		std::cout << "No ntdll.dll found\n";
+		return false;
+	}
+	return static_cast<void*>(GetProcAddress(hntdll, "wine_get_version")) != nullptr;
+}
+
 static void set_global_addresses()
 {
 	const double g_winver = getSysOpType();
-	if (g_winver >= 10)
+	const bool wine = is_wine();
+	// FIXME: hook into the main loop, get stack pointer from there. Current way can and will break on OS updates.
+	if (wine)
+		g_win10Offset = 0xA30000; // Wine 10.0
+	else if (g_winver >= 10)
 		g_win10Offset = 0x10000;
 	else
 		g_win10Offset = 0;
 
-	std::cout << "winver: " << g_winver << '\n'
+	std::cout << "winver: " << g_winver << "\n (wine=" << (wine ? "yes" : "no") << ") \n"
 		<< "win10Offset: " << g_win10Offset << '\n';
 
 	hkGauge = (double*)(0x187200 + g_win10Offset);
