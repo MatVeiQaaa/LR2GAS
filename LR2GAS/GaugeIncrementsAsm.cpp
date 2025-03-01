@@ -349,6 +349,7 @@ void GetIncrements::HookIncrements()
 		vMagicNumber = (int*)(0x0CC28C + g_win10Offset);
 
 		gaugeType = (int*)(0x0EF840 + g_win10Offset);
+		battleType = (int*)(0x0EF884 + g_win10Offset);
 	}
 	std::cout << "winver: " << g_winver << '\n';
 	std::cout << "win10Offset: " << g_win10Offset << std::endl;
